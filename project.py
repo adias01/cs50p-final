@@ -6,6 +6,7 @@ import sys
 
 from datetime import date
 from pathlib import Path
+from rich.console import Console
 from tabulate import tabulate, SEPARATING_LINE
 
 cwd = Path.cwd()
@@ -190,6 +191,7 @@ def month_stats(file_name):
 
 
 def main():
+    console = Console()
     args = parse_arg()  
     txtfile = args.file
 
@@ -200,9 +202,12 @@ def main():
 
     month = month_stats(file_name) 
 
-    print(
+    console.print(
         f"{pyfiglet.figlet_format(month, font="small")}\n"
+        f"[bold]Alder på nye beboere:[/bold]\n"
         f"{age_stats(file_name)}\n\n"
+        f"[bold]Antall nye beboere som har flyttet\n"
+        f"fra nabokommuner og Oslo:[/bold]\n"
         f"{pre_mun_stats(file_name)}\n"
         )
 
