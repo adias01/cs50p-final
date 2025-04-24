@@ -1,6 +1,6 @@
 # Municipal Newcomer Statistics Tool
 Author: [@adias01](https://github.com/adias01)
-#### Video Demo:  <URL HERE>
+
 #### Description:
 A Python program that uses CLI to parse a text (.txt) file containing data on a municipality's new citizens, converts it to a CSV file for further processing and then outputs two formatted tables and ASCII art for the corresponding month.
 
