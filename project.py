@@ -6,14 +6,14 @@ import sys
 
 from datetime import date
 from pathlib import Path
-from rich.console import Console
+from rich.console import Console 
 from tabulate import tabulate, SEPARATING_LINE
 
 cwd = Path.cwd()
 
 def parse_arg():
     parser = argparse.ArgumentParser(
-        usage="Generate statistics on the municipality's new citizens related"
+        usage="Generates statistics on the municipality's new citizens"
     )
     parser.add_argument(
         "-f",
@@ -113,15 +113,15 @@ def age_stats(file_name):
         total = age_0_5 + age_6_19 + age_20_44 + age_45_66 + age_67_etc
 
         table = [
-            ["0 - 5 år", age_0_5],
-            ["6 - 19 år", age_6_19],
-            ["20 - 44 år", age_20_44],
-            ["45 - 66 år", age_45_66],
-            ["67+ år", age_67_etc],
+            ["0 - 5", age_0_5],
+            ["6 - 19", age_6_19],
+            ["20 - 44", age_20_44],
+            ["45 - 66", age_45_66],
+            ["67+", age_67_etc],
             SEPARATING_LINE,
             ["TOTAL", total]
         ]
-        headers = ["Alder", "Antall"]
+        headers = ["Age", "Amount"]
         
         return tabulate(table, headers=headers, tablefmt="simple")
 
@@ -130,61 +130,61 @@ def pre_mun_stats(file_name):
     with open(f"{cwd}/{file_name}.csv") as file:
         reader = csv.DictReader(file)
 
-        stange = 0
-        ringsaker = 0
-        loten = 0
-        elverum = 0
-        oslo = 0
+        mun1 = 0
+        mun2 = 0
+        mun3 = 0
+        mun4 = 0
+        capital = 0
 
         for row in reader:
             mun_no = row["tidl.knr"]
 
             if mun_no == "3413":
-                stange += 1
+                mun1 += 1
 
             elif mun_no == "3411":
-                ringsaker += 1
+                mun2 += 1
 
             elif mun_no == "3412":
-                loten += 1
+                mun3 += 1
 
             elif mun_no == "3420":
-                elverum += 1
+                mun4 += 1
 
             elif mun_no == "0301":
-                oslo += 1
+                capital += 1
 
         table = [
-            ["Stange", stange],
-            ["Ringsaker", ringsaker],
-            ["Løten", loten],
-            ["Elverum", elverum],
-            ["Oslo", oslo],
+            ["Municipality 1", mun1],
+            ["Municipality 2", mun2],
+            ["Municipality 3", mun3],
+            ["Municipality 4", mun4],
+            ["Capital", capital],
         ]
-        headers = ["Kommune", "Antall"]
+        headers = ["Municipality", "Amount"]
         
         return tabulate(table, headers=headers, tablefmt="simple")
 
 
 def month_stats(file_name):
     months = {
-        1: "Januar",
-        2: "Februar",
-        3: "Mars",
+        1: "January",
+        2: "February",
+        3: "March",
         4: "April",
-        5: "Mai",
-        6: "Juni",
-        7: "Juli",
+        5: "May",
+        6: "June",
+        7: "July",
         8: "August",
         9: "September",
-        10: "Oktober",
+        10: "October",
         11: "November",
-        12: "Desember"
+        12: "December"
         }
     
     month_no = int(file_name[4:6]) - 1
     if month_no == 0:
-        month_no == 12
+        month_no = 12
     
     month_name = months.get(month_no)
     return month_name 
@@ -204,10 +204,10 @@ def main():
 
     console.print(
         f"{pyfiglet.figlet_format(month, font="small")}\n"
-        f"[bold]Alder på nye beboere:[/bold]\n"
+        f"[bold]Age of new residents:[/bold]\n"
         f"{age_stats(file_name)}\n\n"
-        f"[bold]Antall nye beboere som har flyttet\n"
-        f"fra nabokommuner og Oslo:[/bold]\n"
+        f"[bold]Number of new residents who have moved from[/bold]\n"
+        f"[bold]neighboring municipalities and the capital:[/bold]\n"
         f"{pre_mun_stats(file_name)}\n"
         )
 

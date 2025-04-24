@@ -1,63 +1,67 @@
 import csv
-from pathlib import Path
 from datetime import date
-
+from pathlib import Path
 import pytest
 
 from project import create_csv, age_stats, pre_mun_stats, month_stats
+# 🔁 Replace 'your_script' with the filename of your main Python script (without .py)
+
 
 @pytest.fixture
 def sample_txt(tmp_path):
-    txt_file = tmp_path / "202304_nyinflyttede.txt"
+    txt_file = tmp_path / "202304_newcomers.txt"  # ✅ FIX: using / instead of +
     content = (
         "f.aar;navn;adresse1;adresse2;postnr;poststed;flyttet;tidl.knr;tidl.k\n"
-        "2020;Anna Test;Gate 1;;1234;Testby;2023-04-05;3413;Stange\n"
-        "2005;Ola Normann;Gate 2;;1234;Testby;2023-04-06;0301;Oslo\n"
-        "1990;Kari Nordmann;Gate 3;;1234;Testby;2023-04-07;3420;Elverum\n"
-        "1975;Per Persen;Gate 4;;1234;Testby;2023-04-08;3411;Ringsaker\n"
-        "1950;Lise Hansen;Gate 5;;1234;Testby;2023-04-09;3412;Løten\n"
+        "2020;Alice Smith;Street 1;;1000;CityA;2023-04-01;3413;Mun1\n"
+        "2008;Bob Johnson;Street 2;;1001;CityB;2023-04-02;0301;Capital\n"
+        "1985;Carol White;Street 3;;1002;CityC;2023-04-03;3420;Mun4\n"
+        "1970;David Black;Street 4;;1003;CityD;2023-04-04;3411;Mun2\n"
+        "1955;Eve Green;Street 5;;1004;CityE;2023-04-05;3412;Mun3\n"
     )
     txt_file.write_text(content, encoding="utf-8")
     return txt_file
 
 
 def test_create_csv_creates_valid_csv(sample_txt):
-    csv_name = sample_txt.stem
-    create_csv(sample_txt, csv_name)
-    csv_file = sample_txt.parent / f"{csv_name}.csv"
+    file_name = sample_txt.stem
+    create_csv(sample_txt, file_name)
 
+    csv_file = sample_txt.parent + f"{file_name}.csv"
     assert csv_file.exists()
 
     with open(csv_file, newline="") as f:
         reader = list(csv.DictReader(f))
         assert len(reader) == 5
-        assert reader[0]["navn"] == "Anna Test"
-        assert reader[-1]["tidl.k"] == "Løten"
+        assert reader[0]["navn"] == "Alice Smith"
+        assert reader[-1]["tidl.k"] == "Mun3"
 
 
-def test_age_stats(sample_txt):
+def test_age_stats_output(sample_txt):
     file_name = sample_txt.stem
     create_csv(sample_txt, file_name)
+
     stats = age_stats(file_name=sample_txt.parent / file_name)
-
-    current_year = date.today().year
-    ages = [current_year - int(y) for y in [2020, 2005, 1990, 1975, 1950]]
-
-    assert "0 - 5 år" in stats
-    assert str(ages.count(i) for i in range(0, 6))  # Just verifying it doesn’t crash and includes age group label
+    assert "Age" in stats
+    assert "TOTAL" in stats
 
 
-def test_pre_mun_stats(sample_txt):
+def test_pre_mun_stats_output(sample_txt):
     file_name = sample_txt.stem
     create_csv(sample_txt, file_name)
+
     stats = pre_mun_stats(file_name=sample_txt.parent / file_name)
+    assert "Municipality 1" in stats
+    assert "Municipality 2" in stats
+    assert "Capital" in stats
 
-    assert "Stange" in stats
-    assert "Ringsaker" in stats
-    assert "Oslo" in stats
 
-
-def test_month_stats():
-    file_name = "202304_nyinflyttede"
+def test_month_stats_correct_month():
+    file_name = "202304_newcomers"
     month = month_stats(file_name)
-    assert month == "Mars"
+    assert month == "March"
+
+
+def test_month_stats_wraparound():
+    file_name = "202301_newcomers"
+    month = month_stats(file_name)
+    assert month == "December"
