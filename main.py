@@ -36,7 +36,11 @@ def validate_txtfile(txtfile, file_ext):
 
 
 def create_csv(txtfile, file_name):
-    with open(txtfile) as txt, open(f"{cwd}/{file_name}.csv", "w", newline="") as csvf:
+    txtfile = Path(txtfile)
+    file_name = Path(file_name)
+    
+    file_path = txtfile.parent / f"{file_name.stem}.csv"
+    with open(txtfile) as txt, open(file_path, "w", encoding="utf-8", newline="") as csvf:
         reader = txt.readlines()
         reader.pop(0)
 
@@ -59,7 +63,7 @@ def create_csv(txtfile, file_name):
 
             for item in newcomer:
                 if item == "":
-                    item == "N/A"
+                    item = "N/A"
 
             year, name, address1, address2, zipcode, city, moved, pre_mun_no, pre_mun = (
                 newcomer
@@ -80,7 +84,8 @@ def create_csv(txtfile, file_name):
 
 
 def age_stats(file_name):
-    with open(f"{cwd}/{file_name}.csv") as file:
+    file_path = Path(f"{file_name}.csv") if isinstance(file_name, str) else file_name.with_suffix(".csv")
+    with open(file_path, encoding="utf-8") as file:
         today = date.today()
         this_year = today.year
 
@@ -127,7 +132,8 @@ def age_stats(file_name):
 
 
 def pre_mun_stats(file_name):
-    with open(f"{cwd}/{file_name}.csv") as file:
+    file_path = Path(f"{file_name}.csv") if isinstance(file_name, str) else file_name.with_suffix(".csv")
+    with open(file_path, encoding="utf-8") as file:
         reader = csv.DictReader(file)
 
         mun1 = 0
