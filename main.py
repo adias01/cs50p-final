@@ -1,46 +1,38 @@
-import argparse
 import csv
-import pyfiglet
 import os
 import sys
 
 from datetime import date
 from pathlib import Path
-from rich.console import Console 
 from tabulate import tabulate, SEPARATING_LINE
 
+# Path variables
 cwd = Path.cwd()
-
-def parse_arg():
-    parser = argparse.ArgumentParser(
-        usage="Generates statistics on the municipality's new citizens"
-    )
-    parser.add_argument(
-        "-f",
-        "--file",
-        required=True,
-        help="text (.txt) file containing data on the newcomers"
-    )
-    return parser.parse_args()
+cwd_text_files = cwd / "text_files"
+cwd_csv_files = cwd / "csv_files"
 
 
-def validate_txtfile(txtfile, file_ext):
+# Checks if file is .txt and readable
+def validate_txtfile(file_name, file_ext):
     if file_ext != ".txt":
-        sys.exit(f"ERROR: {txtfile} is not a text file")
+        sys.exit(f"ERROR: {file_name}{file_ext} is not a text file")
 
     try:
-        with open(txtfile) as file:
+        with open(f"{cwd_text_files}\\{file_name}{file_ext}") as file:
             file.readable
     except OSError:
-        sys.exit(f"ERROR: {txtfile} could not be read")
+        sys.exit(f"ERROR: {file_name}{file_ext} could not be read")
 
 
-def create_csv(txtfile, file_name):
-    txtfile = Path(txtfile)
+# Converts .txt file to .csv
+def convert_to_csv(file_name, file_ext):
+    txtfile = cwd_text_files / f"{file_name}{file_ext}"
     file_name = Path(file_name)
-    
-    file_path = txtfile.parent / f"{file_name.stem}.csv"
-    with open(txtfile) as txt, open(file_path, "w", encoding="utf-8", newline="") as csvf:
+
+    file_path = cwd_csv_files / f"{file_name.stem}.csv"
+    with open(txtfile, encoding="utf-8") as txt, open(
+        file_path, "w", encoding="utf-8", newline=""
+    ) as csvf:
         reader = txt.readlines()
         reader.pop(0)
 
@@ -65,9 +57,17 @@ def create_csv(txtfile, file_name):
                 if item == "":
                     item = "N/A"
 
-            year, name, address1, address2, zipcode, city, moved, pre_mun_no, pre_mun = (
-                newcomer
-            )
+            (
+                year,
+                name,
+                address1,
+                address2,
+                zipcode,
+                city,
+                moved,
+                pre_mun_no,
+                pre_mun,
+            ) = newcomer
             writer.writerow(
                 {
                     "f.aar": year,
@@ -83,8 +83,13 @@ def create_csv(txtfile, file_name):
             )
 
 
+# Generates statistics on the newcomers age based on year of birth
 def age_stats(file_name):
-    file_path = Path(f"{file_name}.csv") if isinstance(file_name, str) else file_name.with_suffix(".csv")
+    file_path = (
+        Path(f"{cwd_csv_files}/{file_name}.csv")
+        if isinstance(file_name, str)
+        else file_name.with_suffix(".csv")
+    )
     with open(file_path, encoding="utf-8") as file:
         today = date.today()
         this_year = today.year
@@ -117,105 +122,125 @@ def age_stats(file_name):
 
         total = age_0_5 + age_6_19 + age_20_44 + age_45_66 + age_67_etc
 
-        table = [
-            ["0 - 5", age_0_5],
-            ["6 - 19", age_6_19],
-            ["20 - 44", age_20_44],
-            ["45 - 66", age_45_66],
-            ["67+", age_67_etc],
-            SEPARATING_LINE,
-            ["TOTAL", total]
-        ]
-        headers = ["Age", "Amount"]
-        
-        return tabulate(table, headers=headers, tablefmt="simple")
+    return total, age_0_5, age_6_19, age_20_44, age_45_66, age_67_etc
 
 
+# Generates statistics on the newcomers previous municipality of residence
 def pre_mun_stats(file_name):
-    file_path = Path(f"{file_name}.csv") if isinstance(file_name, str) else file_name.with_suffix(".csv")
+    file_path = (
+        Path(f"{cwd_csv_files}/{file_name}.csv")
+        if isinstance(file_name, str)
+        else file_name.with_suffix(".csv")
+    )
     with open(file_path, encoding="utf-8") as file:
         reader = csv.DictReader(file)
 
-        mun1 = 0
-        mun2 = 0
-        mun3 = 0
-        mun4 = 0
-        capital = 0
+        stange = 0
+        ringsaker = 0
+        loten = 0
+        elverum = 0
+        oslo = 0
 
         for row in reader:
             mun_no = row["tidl.knr"]
 
             if mun_no == "3413":
-                mun1 += 1
+                stange += 1
 
             elif mun_no == "3411":
-                mun2 += 1
+                ringsaker += 1
 
             elif mun_no == "3412":
-                mun3 += 1
+                loten += 1
 
             elif mun_no == "3420":
-                mun4 += 1
+                elverum += 1
 
             elif mun_no == "0301":
-                capital += 1
+                oslo += 1
 
-        table = [
-            ["Municipality 1", mun1],
-            ["Municipality 2", mun2],
-            ["Municipality 3", mun3],
-            ["Municipality 4", mun4],
-            ["Capital", capital],
-        ]
-        headers = ["Municipality", "Amount"]
-        
-        return tabulate(table, headers=headers, tablefmt="simple")
+    return stange, ringsaker, loten, elverum, oslo
 
 
+# Finds the data's corresponding month
 def month_stats(file_name):
     months = {
-        1: "January",
-        2: "February",
-        3: "March",
-        4: "April",
-        5: "May",
-        6: "June",
-        7: "July",
-        8: "August",
-        9: "September",
-        10: "October",
-        11: "November",
-        12: "December"
-        }
-    
+        1: "januar",
+        2: "februar",
+        3: "mars",
+        4: "april",
+        5: "mai",
+        6: "juni",
+        7: "juli",
+        8: "august",
+        9: "september",
+        10: "oktober",
+        11: "november",
+        12: "desember",
+    }
+
     month_no = int(file_name[4:6]) - 1
     if month_no == 0:
         month_no = 12
-    
+
     month_name = months.get(month_no)
-    return month_name 
+    return month_name
 
 
 def main():
-    console = Console()
-    args = parse_arg()  
-    txtfile = args.file
+    fieldnames = [
+        "måned",
+        "antall innflyttere",
+        "0-5",
+        "6-19",
+        "20-44",
+        "45-66",
+        "67+",
+        "stange",
+        "ringsaker",
+        "løten",
+        "elverum",
+        "oslo",
+    ]
+    with open("statistikk_innflyttere.csv", "w", encoding="utf-8", newline="") as csvf:
+        writer = csv.DictWriter(csvf, fieldnames=fieldnames)
+        writer.writeheader()
 
-    file_name, file_ext = os.path.splitext(txtfile)
+        for file in cwd_text_files.glob("**/*.txt"):
+            file_path, file_ext = os.path.splitext(file)
+            file_name = file_path.split("\\")[-1]
 
-    validate_txtfile(txtfile, file_ext)
-    create_csv(txtfile, file_name)
+            validate_txtfile(file_name, file_ext)
+            convert_to_csv(file_name, file_ext)
 
-    month = month_stats(file_name) 
+            month = month_stats(file_name)
 
-    console.print(
-        f"{pyfiglet.figlet_format(month, font="small")}\n"
-        f"[bold]Age of new residents:[/bold]\n"
-        f"{age_stats(file_name)}\n\n"
-        f"[bold]Number of new residents who have moved from[/bold]\n"
-        f"[bold]neighboring municipalities and the capital:[/bold]\n"
-        f"{pre_mun_stats(file_name)}\n"
-        )
+            total, age_0_5, age_6_19, age_20_44, age_45_66, age_67_etc = age_stats(
+                file_name
+            )
+            stange, ringsaker, loten, elverum, oslo = pre_mun_stats(file_name)
+
+            writer.writerow(
+                {
+                    "måned": month,
+                    "antall innflyttere": total,
+                    "0-5": age_0_5,
+                    "6-19": age_6_19,
+                    "20-44": age_20_44,
+                    "45-66": age_45_66,
+                    "67+": age_67_etc,
+                    "stange": stange,
+                    "ringsaker": ringsaker,
+                    "løten": loten,
+                    "elverum": elverum,
+                    "oslo": oslo,
+                }
+            )
+
+    with open("statistikk_innflyttere.csv", encoding="utf-8") as csvf:
+        reader = csv.DictReader(csvf)
+        stat_dict = [row for row in reader]
+        print("\n", tabulate(stat_dict, headers="keys", tablefmt="grid"), "\n")
 
 
 if __name__ == "__main__":

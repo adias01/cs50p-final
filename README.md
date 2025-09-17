@@ -2,16 +2,13 @@
 Author: [@adias01](https://github.com/adias01)
 
 #### Description:
-A Python program that uses CLI to parse a text (.txt) file containing data on a municipality's new citizens, converts it to a CSV file for further processing and then outputs two formatted tables and ASCII art for the corresponding month.
-
-The first table shows the age of the newcomers, whereas the second table shows how many newcomers come from other municipalities in the region, in addition to the capital.
+A Python program that iterates over text files (.txt) in the text_files directory and converts those files to CSV files for further processing. Statistics is then generated and written to the CSV file on parent level and outputted in the terminal as a table.
 
 ### Features:
-- Converts a .txt file with newcomer data into a .csv file.
+- Converts .txt file(s) with newcomer data into .csv.
 - Calculates age distribution of new residents.
 - Shows how many people have moved from municipalities of interest.
-- Displays results in a visually clear format using tabulate and rich.
-- Highlights the month of the data file using ASCII art via pyfiglet.
+- Displays results in a table using tabulate.
 
 ### Clarifications / Known Limitations:
 The program...
@@ -25,7 +22,6 @@ The program...
 - Python 3
 
 #### Python Standard Libraries:
-- argparse
 - csv
 - datetime
 - os
@@ -33,8 +29,6 @@ The program...
 - sys
 
 #### External Libraries:
-- pyfiglet
-- rich
 - tabulate
   
  ```bash
@@ -44,10 +38,10 @@ The program...
 
 ### Usage:
 <ul>
-<li><b>Input:</b> You provide a .txt file as a command-line argument.</li>
+<li><b>Input:</b> Upload the text files to the text_files directory and run script.</li>
 
 ```bash
-python project.py -f 202504.txt
+python main.py
 ```
 
 <li><b>Validation:</b> The script checks if the file is readable and a .txt file.</li>
@@ -57,7 +51,7 @@ python project.py -f 202504.txt
         <li>Age groups are calculated based on the birth year.</li>
         <li>The number of newcomers coming from municipalities of interest is categorized.</li>
     </ul>
-<li><b>Output:</b> Results are displayed in the terminal with tables and formatted headings. The data's corresponding month is displayed in ASCII art at the top.</li>
+<li><b>Output:</b> Results are displayed in the terminal as a table with keys as heading. The data's corresponding month is displayed in the first column.</li>
 
 ![Visual presentation of project output](assets/images/project_output.png)
 

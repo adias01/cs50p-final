@@ -1,4 +1,2 @@
-pyfiglet
 tabulate
-rich
 pytest # for unit test
